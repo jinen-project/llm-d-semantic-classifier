@@ -19,6 +19,7 @@ CoreWeave *waldorf* cluster (namespace `cnuland-dev`).
 | `manifests/` | everything deployed on the cluster, in apply order |
 | `praxis/` | Praxis gateway config: measured (`:8080`) and control (`:8081`) listeners |
 | `run-campaign.py` | the campaign matrix; one dimension per phase |
+| `placement-evidence.py` | records controlled same-node and cross-node ClusterIP observations |
 | `report.py` | generates the statistical report FROM the captured JSON |
 
 ## Design notes that matter
@@ -63,3 +64,22 @@ python3 report.py --src results --out STATISTICAL-REPORT.md
 
 Raw per-request samples are retained under `results/raw/<label>.csv` so any
 published figure can be recomputed independently.
+
+## Placement evidence
+
+The high-load campaign deliberately keeps its driver off the target node. The
+placement arm is separate and low-rate: it runs two otherwise identical
+observers through the same ClusterIP Service, one scheduled with the target and
+one on a different node. It is therefore evidence about network placement, not
+a replacement throughput figure.
+
+```sh
+kubectl apply -f manifests/21-placement-observers.yaml
+python3 placement-evidence.py
+```
+
+Before any traffic, the runner requires exactly one Ready target and one Service
+endpoint. It then reads the scheduler's actual Pod nodes and fails rather than
+mislabel a run if the `same-node` or `cross-node` relationship is not true. The
+checked-in result is `results/json/placement-evidence.json`; its accompanying
+raw samples remain on the campaign PVC under `results/raw/`.
