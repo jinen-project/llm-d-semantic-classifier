@@ -100,3 +100,7 @@ endpoint. It then reads the scheduler's actual Pod nodes and fails rather than
 mislabel a run if the `same-node` or `cross-node` relationship is not true. The
 checked-in result is `results/json/placement-evidence.json`; its accompanying
 raw samples remain on the campaign PVC under `results/raw/`.
+
+`./hack/verify` runs an offline check of that placement guard. It verifies that
+only the matching relationship is accepted and that a mismatched or unassigned
+observer is refused before a result can be labelled.
