@@ -73,6 +73,23 @@ observers through the same ClusterIP Service, one scheduled with the target and
 one on a different node. It is therefore evidence about network placement, not
 a replacement throughput figure.
 
+### Before running
+
+This arm is intentionally tied to a maintainer-owned cluster. Before applying
+the observer manifest, confirm all of the following:
+
+1. Exactly one `llm-d-sc` target Pod is Ready and the `llm-d-sc` Service has
+   exactly that Pod as its endpoint.
+2. `bench-placement-same` selects the node on which that target is scheduled.
+3. `bench-placement-cross` selects a different schedulable node.
+4. The `bench-workspace` PVC contains the built `scbench` binary and has space
+   for the JSON summary and raw samples.
+
+The manifest carries the node selectors used for the documented cluster; adjust
+them to the observed target node and a distinct available node before running in
+another context. A runner failure is a failed precondition or measurement run,
+not evidence that either placement is faster or slower.
+
 ```sh
 kubectl apply -f manifests/21-placement-observers.yaml
 python3 placement-evidence.py
